@@ -1,0 +1,21 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "CMake: Build",
+            "type": "cmake",
+            "group": "build",
+            "command": "build",
+            "targets": ["windows-keylogger"],
+            "problemMatcher": []
+        },
+        {
+            "label": "CMake: Clean Rebuild",
+            "type": "cmake",
+            "group": "build",
+            "command": "cleanRebuild",
+            "targets": ["windows-keylogger"],
+            "problemMatcher": []
+        }
+    ]
+}

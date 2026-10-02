@@ -1,0 +1,60 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(Windows) Launch",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "args": [
+                "-d",
+                "enc",
+                "-m",
+                "ecb",
+                "-k",
+                "0x2B7E151628AED2A6ABF7158809CF4F3C",
+                "-i",
+                "res/plaintext.txt",
+                "-o",
+                "res/ciphertext.aes"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "integratedTerminal",
+            "preLaunchTask": "CMake: Build"
+        },
+        {
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "args": [
+                "-d",
+                "enc",
+                "-m",
+                "ecb",
+                "-k",
+                "0x2B7E151628AED2A6ABF7158809CF4F3C",
+                "-i",
+                "res/plaintext.txt",
+                "-o",
+                "res/ciphertext.aes"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "CMake: Build"
+        }
+    ]
+}
