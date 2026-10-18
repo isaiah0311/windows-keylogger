@@ -8,6 +8,12 @@ set(CMAKE_C_EXTENSIONS OFF)
 
 add_executable(${PROJECT_NAME} src/main.c)
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    WIN32_LEAN_AND_MEAN
+    UNICODE
+    _UNICODE
+)
+
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE
         /W4
